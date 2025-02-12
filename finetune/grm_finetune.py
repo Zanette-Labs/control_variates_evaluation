@@ -11,66 +11,31 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 """
 trl == 0.11.0
-transformers = 0.44.0
+transformers = 4.40.0
 
-Full training:
-python examples/scripts/reward_modeling.py \
-    --model_name_or_path Qwen/Qwen2-0.5B-Instruct \
-    --dataset_name trl-lib/ultrafeedback_binarized \
-    --output_dir Qwen2-0.5B-Reward \
-    --per_device_train_batch_size 8 \
-    --num_train_epochs 1 \
-    --gradient_accumulation_steps 1 \
-    --remove_unused_columns False \
-    --gradient_checkpointing True \
-    --learning_rate 1.0e-5 \
-    --logging_steps 25 \
-    --eval_strategy steps \
-    --eval_steps 50 \
-    --max_length 2048
-
-LoRA:
-python examples/scripts/reward_modeling.py \
-    --model_name_or_path Qwen/Qwen2-0.5B-Instruct \
-    --dataset_name trl-lib/ultrafeedback_binarized \
-    --output_dir Qwen2-0.5B-Reward \
-    --per_device_train_batch_size 8 \
-    --num_train_epochs 1 \
-    --gradient_accumulation_steps 1 \
-    --remove_unused_columns False \
-    --gradient_checkpointing True \
-    --learning_rate 1.0e-5 \
-    --logging_steps 25 \
-    --eval_strategy steps \
-    --eval_steps 50 \
-    --max_length 2048 /
-    --use_peft \
-    --lora_r 32 \
-    --lora_alpha 16
+grm finetune
 """
 
-from prepare_dataset import prepare_dataset
-from grm_gemma_reward_trainer import GemmaRewardTrainer
+from utils import prepare_dataset
 
 import warnings
 
 import torch
+import torch.nn as nn
 from accelerate import PartialState
 from datasets import load_dataset
 from tqdm import tqdm
-from transformers import AutoModelForSequenceClassification, AutoTokenizer, HfArgumentParser
-# from datetime import datetime
+from transformers import AutoModelForSequenceClassification, AutoTokenizer, HfArgumentParser, PreTrainedModel
+from transformers.trainer_pt_utils import nested_detach
 import os
 
 from trl import (
     ModelConfig,
     RewardConfig,
     RewardTrainer,
-    # get_kbit_device_map,
-    # get_peft_config,
-    # get_quantization_config,
     setup_chat_format,
 )
 from trl.commands.cli_utils import RewardScriptArguments
@@ -78,18 +43,51 @@ from trl.extras.dataset_formatting import conversations_formatting_function
 from dataclasses import dataclass, field
 import wandb
 import numpy as np
+from typing import Dict, Union, Any, Tuple, Optional, List
 
-# tqdm.pandas()
+class GemmaRewardTrainer(RewardTrainer):
+    def compute_loss(
+        self,
+        model: Union[PreTrainedModel, nn.Module],
+        inputs: Dict[str, Union[torch.Tensor, Any]],
+        return_outputs=False,
+    ) -> Union[torch.Tensor, Tuple[torch.Tensor, Dict[str, torch.Tensor]]]:
+        if not self.use_reward_data_collator:
+            warnings.warn(
+                "The current compute_loss is implemented for RewardDataCollatorWithPadding,"
+                " if you are using a custom data collator make sure you know what you are doing or"
+                " implement your own compute_loss method."
+            )
+        _, _, rewards_chosen = model(
+            input_ids=inputs["input_ids_chosen"],
+            attention_mask=inputs["attention_mask_chosen"],
+        )
+        _, _, rewards_rejected = model(
+            input_ids=inputs["input_ids_rejected"],
+            attention_mask=inputs["attention_mask_rejected"],
+        )
+        rewards_chosen = rewards_chosen.unsqueeze(-1) # (B,1)
+        rewards_rejected = rewards_rejected.unsqueeze(-1) # (B,1)
+        # calculate loss, optionally modulate with margin
+        if "margin" in inputs:
+            loss = -nn.functional.logsigmoid(rewards_chosen - rewards_rejected - inputs["margin"]).mean()
+        else:
+            loss = -nn.functional.logsigmoid(rewards_chosen - rewards_rejected).mean()
+
+        if self.args.center_rewards_coefficient is not None:
+            loss += self.args.center_rewards_coefficient * torch.mean((rewards_chosen + rewards_rejected) ** 2)
+
+        if return_outputs:
+            return loss, {
+                "rewards_chosen": rewards_chosen,
+                "rewards_rejected": rewards_rejected,
+            }
+        return loss
 
 @dataclass
 class CustomArguments(RewardConfig):
-    # custom_arg: str = field(
-    #     default="default_value",
-    #     metadata={"help": "Description of the custom argument"}
-    # )
     holdout_model_id: int = field(
         default=0,
-        # metadata={"help": "Another custom argument"}
     )
     log_base_dir: str = field(
         default="default",
@@ -125,11 +123,8 @@ if __name__ == "__main__":
         if model_config.torch_dtype in ["auto", None]
         else getattr(torch, model_config.torch_dtype)
     )
-    # quantization_config = get_quantization_config(model_config)
     model_kwargs = dict(
         revision=model_config.model_revision,
-        # device_map=get_kbit_device_map() if quantization_config is not None else None,
-        # quantization_config=quantization_config,
         use_cache=False if config.gradient_checkpointing else True
     )
     tokenizer = AutoTokenizer.from_pretrained(
@@ -145,16 +140,9 @@ if __name__ == "__main__":
     if tokenizer.chat_template is None:
         model, tokenizer = setup_chat_format(model, tokenizer)
 
-    # if model_config.use_peft and model_config.lora_task_type != "SEQ_CLS":
-    #     warnings.warn(
-    #         "You are using a `task_type` that is different than `SEQ_CLS` for PEFT. This will lead to silent bugs"
-    #         " Make sure to pass --lora_task_type SEQ_CLS when using this script with PEFT."
-    #     )
-
     #############################
     # Load and preprocess dataset
     #############################
-    # dataset = load_dataset(args.dataset_name)
 
     def preprocess_function(examples):
         new_examples = {
@@ -178,7 +166,6 @@ if __name__ == "__main__":
         # This assumes the chosen/rejected columns are in the OpenAI messages format.
         chosen_fn = conversations_formatting_function(tokenizer, "chosen")
         rejected_fn = conversations_formatting_function(tokenizer, "rejected")
-        # print(f"Holdout model id", config.holdout_model_id)
         train_dataset, eval_dataset = prepare_dataset(dataset_name = args.dataset_name, holdout_model_id = config.holdout_model_id, keep_tie = config.keep_tie)
         train_dataset = train_dataset.map(
             lambda x: {"chosen": chosen_fn(x), "rejected": rejected_fn(x)}, num_proc=config.dataset_num_proc
@@ -213,14 +200,12 @@ if __name__ == "__main__":
     ##########
     # Training
     ##########
-    # model = model.to("cuda")
     trainer = GemmaRewardTrainer(
         model=model,
         tokenizer=tokenizer,
         args=config,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
-        # peft_config=get_peft_config(model_config),
     )
     trainer.train()
 
@@ -234,6 +219,5 @@ if __name__ == "__main__":
         trainer.log_metrics("eval", metrics)
         trainer.save_metrics("eval", metrics)
         trainer.save_model(config.output_dir)
-        # trainer.push_to_hub()
         print(f"Model hold out id {config.holdout_model_id}")
         print("Finished!")

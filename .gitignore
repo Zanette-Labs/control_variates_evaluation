@@ -1,0 +1,16 @@
+results_evaluators/
+results/
+results*/
+debug/
+slurm/
+*.log
+__pycache__/
+*configs.json
+annotation.json
+leaderboard.csv
+debug.py
+*.png
+other_tests/
+wandb/
+lightning_logs/
+data/

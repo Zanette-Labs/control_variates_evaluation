@@ -41,5 +41,5 @@ for ((id=0; id<20; id++)); do
     --bf16 True\
     --remove_unused_columns False \
     --max_length 2048 \
-    --dataloader_num_workers ${SLURM_CPUS_PER_TASK} \
+    --dataloader_num_workers ${SLURM_CPUS_PER_TASK}
 done

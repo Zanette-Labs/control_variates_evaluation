@@ -13,10 +13,13 @@
 # limitations under the License.
 
 """
+trl == 0.13.0
+transformers = 4.47.1
+
 skywork finetuning
 """
 
-from prepare_dataset import prepare_dataset
+from utils import prepare_dataset
 
 import warnings
 
@@ -32,29 +35,16 @@ from trl import (
     RewardConfig,
     RewardTrainer,
     ScriptArguments,
-    # get_kbit_device_map,
-    # get_peft_config,
-    # get_quantization_config,
     setup_chat_format,
 )
-# from trl.commands.cli_utils import RewardScriptArguments
 from dataclasses import dataclass, field
 import wandb 
 import numpy as np
 
 @dataclass
 class CustomArguments(RewardConfig):
-    # custom_arg: str = field(
-    #     default="default_value",
-    #     metadata={"help": "Description of the custom argument"}
-    # )
-    # dataset_name: str = field(
-    #     default="chatbot_arena",
-    #     # metadata={"help": "Another custom argument"}
-    # )
     holdout_model_id: int = field(
-        default=0,
-        # metadata={"help": "Another custom argument"}
+        default=0
     )
     log_base_dir: str = field(
         default="default",
@@ -88,11 +78,8 @@ if __name__ == "__main__":
     torch_dtype = (
         model_args.torch_dtype if model_args.torch_dtype in ["auto", None] else getattr(torch, model_args.torch_dtype)
     )
-    # quantization_config = get_quantization_config(model_args)
     model_kwargs = dict(
         revision=model_args.model_revision,
-        # device_map=get_kbit_device_map() if quantization_config is not None else None,
-        # quantization_config=quantization_config,
         use_cache=False if training_args.gradient_checkpointing else True,
         torch_dtype=torch_dtype,
     )
@@ -109,22 +96,12 @@ if __name__ == "__main__":
     if tokenizer.chat_template is None:
         model, tokenizer = setup_chat_format(model, tokenizer)
 
-    # if model_args.use_peft and model_args.lora_task_type != "SEQ_CLS":
-    #     warnings.warn(
-    #         "You are using a `task_type` that is different than `SEQ_CLS` for PEFT. This will lead to silent bugs"
-    #         " Make sure to pass --lora_task_type SEQ_CLS when using this script with PEFT.",
-    #         UserWarning,
-    #     )
-
     ##############
     # Load dataset
     ##############
-    # print(script_args)
-    # dataset = load_dataset(script_args.dataset_name, name=script_args.dataset_config)
     train_dataset, eval_dataset = prepare_dataset(script_args.dataset_name, holdout_model_id = training_args.holdout_model_id, keep_tie=training_args.keep_tie)
     print(f"Train dataset: {len(train_dataset)} examples")
     print(f"Eval dataset: {len(eval_dataset)} examples")
-    # print(train_dataset)
 
     ##########
     # Training
@@ -135,31 +112,6 @@ if __name__ == "__main__":
         args=training_args,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset
-        # peft_config=get_peft_config(model_args),
     )
     trainer.train()
-
-    ############################
-    # Save model and push to Hub
-    ############################
-    # metrics = trainer.evaluate()
-    # if is_main_process():
-        # trainer.save_model(training_args.output_dir)
-        # print(f"Save model to {config.output_dir}")
-        # trainer.log_metrics("eval", metrics)
-        # trainer.save_metrics("eval", metrics)
-        # trainer.save_model(training_args.output_dir)
-        # trainer.push_to_hub()
-        # print(f"Model hold out id {training_args.holdout_model_id}")
     print("Finished!")
-    # trainer.save_model(training_args.output_dir)
-
-    # if training_args.eval_strategy != "no":
-    #     metrics = trainer.evaluate()
-    #     trainer.log_metrics("eval", metrics)
-    #     trainer.save_metrics("eval", metrics)
-
-    # Save and push to hub
-    # trainer.save_model(training_args.output_dir)
-    # if training_args.push_to_hub:
-    #     trainer.push_to_hub(dataset_name=script_args.dataset_name)
