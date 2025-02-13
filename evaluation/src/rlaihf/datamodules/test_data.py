@@ -35,63 +35,22 @@ class TestDatamodule(L.LightningDataModule):
 
 
     def prepare_data(self):
-        '''
-        Load, tokenize, save to disk.
-        '''
-        # if not os.path.exists(self.train_save_dataset_path):
-        #     train_dataset = datasets.load_dataset(self.load_dataset_name, data_dir = self.load_dataset_dir, split="train")           
-        #     train_dataset = train_dataset.map(self.tokenize_pipeline, batched=False)
-        #     train_dataset.save_to_disk(self.train_save_dataset_path)
-     
-        # if not os.path.exists(self.val_save_dataset_path):
-        #     val_dataset = datasets.load_dataset(self.load_dataset_name, data_dir = self.load_dataset_dir, split="test")
-        #     val_dataset = val_dataset.map(self.tokenize_pipeline, batched=False)
-        #     val_dataset.save_to_disk(self.val_save_dataset_path)
-
-        # if not os.path.exists(os.path.expanduser(self.test_save_dataset_path)):
-        
-        # This process should be done in every run.
-        # First, this is not time-consuming. 
-        # Second, if we use different model, tokenization changes, so the tokenized data are different.
         test_dataset = datasets.load_dataset(self.load_dataset_name, data_dir = self.load_dataset_dir, split=self.load_dataset_split)
-        # print(self.tokenize_pipeline)
         test_dataset = test_dataset.map(self.tokenize_pipeline, batched=False)
         indices = list(range(len(test_dataset)))
         self.test_dataset_full = test_dataset.add_column("id", indices)
-        # test_dataset.save_to_disk(self.test_save_dataset_path)
 
     def setup(self, stage: str):
         '''
         Split dataset
         '''
-        # if stage == "fit":
-        #     train_dataset_full = datasets.load_from_disk(self.train_save_dataset_path)
-        #     val_dataset_full = datasets.load_from_disk(self.val_save_dataset_path)
-        #     if self.num_train_data is None:
-        #         self.train_dataset = train_dataset_full
-        #     else:
-        #         idxs = np.random.choice(len(train_dataset_full), size=(self.num_train_data), replace=False)
-        #         self.train_dataset = train_dataset_full.select(idxs)
-
-        #     if self.num_val_data is None:
-        #         self.val_dataset = val_dataset_full
-        #     else:
-        #         idxs = np.random.choice(len(val_dataset_full), size=(self.num_val_data), replace=False)
-        #         self.val_dataset = val_dataset_full.select(idxs)
         if stage == "test":
-            # test_dataset_full = datasets.load_from_disk(self.test_save_dataset_path)
             test_dataset_full = self.test_dataset_full
             if self.num_test_data is None:
                 self.test_dataset = test_dataset_full
             else:
                 idxs = np.random.choice(len(test_dataset_full), size=(self.num_test_data), replace=False)
                 self.test_dataset = test_dataset_full.select(idxs)
-
-    # def train_dataloader(self):
-    #     return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=self.num_workers, collate_fn = self.collate_fn)
-
-    # def val_dataloader(self):
-    #     return DataLoader(self.val_dataset,  batch_size=self.batch_size, num_workers=self.num_workers, collate_fn = self.collate_fn)
 
     def test_dataloader(self):
         return DataLoader(self.test_dataset,  batch_size=self.batch_size, num_workers=self.num_workers, collate_fn = self.collate_fn)
@@ -116,14 +75,4 @@ class TestDatamodule(L.LightningDataModule):
         self.train_save_dataset_path = os.path.join(self.save_dataset_dir, train_save_dataset_filename)
         self.test_save_dataset_path = os.path.join(self.save_dataset_dir, test_save_dataset_filename)
         self.val_save_dataset_path = os.path.join(self.save_dataset_dir, val_save_dataset_filename)
-
-# if __name__ == '__main__':
-#     datamodule = HelpfulHarmlessGemma(2,4,10,10,"Ray2333/GRM-Gemma-2B-sftreg")
-#     # print(datamodule.batch_size)
-#     datamodule.prepare_data()
-#     # datamodule.train_dataloader()
-#     print(datamodule.train_dataset[0])
-#     # for data in datamodule.train_dataset:
-#     #     print(len(data['chosen']))
-
     

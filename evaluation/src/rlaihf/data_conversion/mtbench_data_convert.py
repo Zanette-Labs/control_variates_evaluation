@@ -2,8 +2,6 @@ from typing import List, Dict
 import numpy as np
 
 class MtbenchDataConversion:
-    # Process single turn conversation
-    # Convert winner to score
     def __init__(self):
         pass
     def __call__(self, datum: Dict):
@@ -29,9 +27,6 @@ class MtbenchDataConversion:
         return datum
 
 class MtbenchSortedDataConversionV2:
-    # Process single turn conversation
-    # Sort model pair
-    # Convert winner to score
     def __init__(self):
         pass
     def __call__(self, datum: Dict):

@@ -6,23 +6,18 @@ trainer:
 model:
   class_path: rlaihf.algorithms.GrmGemma
   init_args:
-    # model_name_or_path: "/home/zhaoyiz/projects/misc/rm_finetune/results/GRM-Gemma-2B-sftreg/run_20241222_152817"
     model_name_or_path: "Ray2333/GRM-Gemma-2B-sftreg"
     model_dtype: float16
     save_dir: "/home/zhaoyiz/projects/data/reward_dicts/mt-bench_gemma_sorted_avg_new"
     dialog_keys: ["conversation_a", "conversation_b"]
-    # load_weight_dir: None
-    # load_weight_dir: None
 data:
   class_path: rlaihf.datamodules.MtbenchCorrEvalDatamodule
-  # class_path: rlaihf.datamodules.ChatBotArenaDebugDatamodule
   init_args:
     load_dataset_name: "lmsys/mt_bench_human_judgments"
     load_dataset_split: "human"
     tokenize_pipeline:
       class_path: rlaihf.tokenize_pipelines.TokenizePipelineV2
       init_args:
-        # model_name_or_path: "Ray2333/GRM-Gemma-2B-sftreg"
         raw_data_convert: rlaihf.data_conversion.MtbenchSortedDataConversionV2
     collate_fn:
       class_path: rlaihf.collators.StandardPaddingCollatorV3

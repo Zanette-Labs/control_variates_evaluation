@@ -16,13 +16,6 @@ class ApiDatamodule(L.LightningDataModule):
     No processing to the dataset. Batch size is fixed to 1
     '''
     def __init__(self, load_dataset_name: str, save_dataset_dir: str, load_dataset_split: Optional[str] = None, load_dataset_dir: Optional[str] = None, num_test_data: Optional[int] = None, random_sample: Optional[bool] = True, sample_seed: int = 123, data_convert: Optional[Callable] = None):
-        '''
-        TODO: clean the comment
-        load_dataset_name: e.g., "Anthropic/hh-rlhf"
-        load_dataset_dir: e.g., "harmless-base"
-        save_dataset_dir: Directory to save the tokenized dataset.
-        random_sample: if True, randomly sample test_data from dataset
-        '''
         super().__init__()
         self.save_hyperparameters(ignore = ["_class_path"])
 
@@ -45,7 +38,6 @@ class ApiDatamodule(L.LightningDataModule):
         Load, tokenize, save to disk.
         '''
         test_dataset = datasets.load_dataset(self.load_dataset_name, data_dir = self.load_dataset_dir, split=self.load_dataset_split)
-        # print(self.tokenize_pipeline)
         test_dataset = test_dataset.map(self.data_convert, batched=False)
         test_dataset.save_to_disk(self.test_save_dataset_path)
 
@@ -70,7 +62,6 @@ class ApiDatamodule(L.LightningDataModule):
                 self.test_dataset = test_dataset_full.select(idxs)
 
     def test_dataloader(self):
-        # return DataLoader(self.test_dataset,  batch_size=1, num_workers=self.num_workers)
         return self.test_dataset
 
     
@@ -114,6 +105,4 @@ class ChabotArenaApiDatamodule(ApiDatamodule):
                 dialog_keys = ["conversation_a", "conversation_b"]))
 
     def _filter(self, dataset):
-        # dataset = dataset.filter(lambda x: x["turn"] == 1 and x["language"] == "English")
-        # print(f"After filtering, dataset length is {len(dataset)}")
         return dataset

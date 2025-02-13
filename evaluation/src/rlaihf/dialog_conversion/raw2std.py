@@ -6,7 +6,6 @@ def anthropic2std(anthropic_dialog: str) -> List[Dict[str,str]]:
     Raw format: "Human: xxx Assistant: xxx ..."
     '''
     human_splitted_dialogs = anthropic_dialog.split("\n\nHuman:")
-    # print(human_splitted_dialogs)
     dict_dialog = []
     for idx in range(1, len(human_splitted_dialogs)): # First string is empty
         human_assistant_dialog = human_splitted_dialogs[idx]

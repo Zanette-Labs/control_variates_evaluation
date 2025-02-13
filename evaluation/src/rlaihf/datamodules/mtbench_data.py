@@ -7,8 +7,6 @@ import pandas as pd
 def process_mtbench_dataset(dataset):
     # Average labels with same id and model pairs
     df = dataset.to_pandas()
-    # print("\nConverted to Pandas DataFrame:")
-    # print(df)
 
     # Group by 'id', 'model_a', 'model_b' and aggregate 'winner' into a list
     grouped_df = df.groupby(['question_id', 'model_a', 'model_b', 'turn'])
@@ -16,12 +14,7 @@ def process_mtbench_dataset(dataset):
     'score': 'mean',
     'conversation_a': 'first',
     'conversation_b': 'first',
-    # 'flip': 'first',
     })
-    # print("\nGrouped DataFrame with 'winner' as list:")
-    # print(grouped_df)
-
-    # Convert the grouped DataFrame back to datasets.Dataset
     new_dataset = datasets.Dataset.from_pandas(grouped_df)
     return new_dataset
 

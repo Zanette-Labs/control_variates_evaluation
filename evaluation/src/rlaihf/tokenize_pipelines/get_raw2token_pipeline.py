@@ -142,15 +142,6 @@ class TokenizePipelineV2:
             template = self.tokenizer.apply_chat_template(datum[k], tokenize = False)
             tokenized_dialogue = self.tokenizer(template, return_tensors="pt", padding = False)
             datum[k] = tokenized_dialogue
-
-        # for k in dialogue_keys:
-        #     if self.raw2std is not None:
-        #         std_datum = self.raw2std(anthropic_dialog=datum[k])
-        #         template = self.tokenizer.apply_chat_template(std_datum, tokenize = False)
-        #     else:
-        #         template = self.tokenizer.apply_chat_template(datum[k], tokenize = False)
-        #     tokenized_dialogue = self.tokenizer(template, return_tensors="pt", padding = False)
-        #     datum[k] = tokenized_dialogue
         return datum 
 
 class NoTokenizePiepline:
