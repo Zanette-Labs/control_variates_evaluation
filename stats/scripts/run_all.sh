@@ -1,0 +1,7 @@
+# Run under stats
+bash scripts/finetune_stats_chatbot_para.sh
+bash scripts/finetune_stats_mtbench_para.sh
+bash scripts/pretrained_stats_chatbot_gpt4.sh
+bash scripts/pretrained_stats_chatbot_para.sh
+bash scripts/pretrained_stats_mtbench_gpt4.sh
+bash scripts/pretrained_stats_mtbench_para.sh
