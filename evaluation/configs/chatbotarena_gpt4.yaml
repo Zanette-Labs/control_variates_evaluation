@@ -1,0 +1,19 @@
+seed: 0
+trainer:
+  accelerator: auto
+  fast_dev_run: False
+model:
+  class_path: rlaihf.algorithms.OpenaiApi
+  init_args:
+    model_name: "gpt-4"
+    save_dir: "results/chatbot-area_api/gpt-4_full"
+    judge_file_path: "configs/fastchat_judge_prompts.jsonl"
+    prompt_type: "pair-v2"
+    record_keys: ["id", "prompt", "response_1", "response_2", "winner"]
+data:
+  class_path: rlaihf.datamodules.ChabotArenaApiDatamodule
+  init_args:
+    save_dataset_dir: "~/datasets"
+    # num_test_data: 500
+    random_sample: True
+    sample_seed: 123

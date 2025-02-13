@@ -1,0 +1,28 @@
+seed: 0
+trainer:
+  accelerator: auto
+  fast_dev_run: False
+model:
+  class_path: rlaihf.algorithms.ArmoRM
+  init_args:
+    model_name_or_path: "RLHFlow/ArmoRM-Llama3-8B-v0.1"
+    model_dtype: bfloat16
+    save_dir: "results/chatbot-arena_armorm_eval"
+    dialog_keys: ["conversation_a", "conversation_b"]
+data:
+  class_path: rlaihf.datamodules.TestDatamodule
+  init_args:
+    load_dataset_name: "lmsys/chatbot_arena_conversations"
+    load_dataset_split: "train"
+    tokenize_pipeline:
+      class_path: rlaihf.tokenize_pipelines.TokenizePipelineV2
+      init_args:
+        raw_data_convert: rlaihf.data_conversion.ChatBotArenaTrainDataConversion
+    collate_fn:
+      class_path: rlaihf.collators.StandardPaddingCollatorV3
+      init_args:
+        other_keys: ["score", "id", "model_a", "model_b"]
+    batch_size: 8
+    save_dataset_dir: "~/datasets"
+    num_workers: 2
+

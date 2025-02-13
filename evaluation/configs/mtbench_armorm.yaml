@@ -1,0 +1,27 @@
+seed: 0
+trainer:
+  accelerator: auto
+  fast_dev_run: False
+model:
+  class_path: rlaihf.algorithms.ArmoRM
+  init_args:
+    model_name_or_path: "RLHFlow/ArmoRM-Llama3-8B-v0.1"
+    model_dtype: bfloat16
+    save_dir: "/home/zhaoyiz/projects/data/reward_dicts/mt-bench_armorm_sorted_avg"
+    dialog_keys: ["conversation_a", "conversation_b"]
+data:
+  class_path: rlaihf.datamodules.MtbenchTestDatamodule
+  init_args:
+    load_dataset_name: "lmsys/mt_bench_human_judgments"
+    load_dataset_split: "human"
+    tokenize_pipeline:
+      class_path: rlaihf.tokenize_pipelines.TokenizePipelineV2
+      init_args:
+        raw_data_convert: rlaihf.data_conversion.MtbenchSortedDataConversionV2
+    collate_fn:
+      class_path: rlaihf.collators.StandardPaddingCollatorV3
+      init_args:
+        other_keys: ["score", "id", "model_a", "model_b"]
+    batch_size: 4
+    save_dataset_dir: "~/datasets"
+    num_workers: 2

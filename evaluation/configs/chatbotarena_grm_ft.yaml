@@ -1,0 +1,36 @@
+seed: 0
+trainer:
+  accelerator: auto
+  fast_dev_run: False
+  logger: False
+model:
+  class_path: rlaihf.algorithms.GrmGemma
+  init_args:
+    # model_name_or_path: "/home/zhaoyiz/projects/misc/rm_finetune/results/GRM-Gemma-2B-sftreg/run_20241222_152817"
+    model_name_or_path: "Ray2333/GRM-Gemma-2B-sftreg"
+    model_dtype: float16
+    save_dir: "results/chatbot-arena_gemma"
+    dialog_keys: ["conversation_a", "conversation_b"]
+    # load_weight_dir: None
+    # load_weight_dir: None
+data:
+  class_path: rlaihf.datamodules.ChatBotArenaCorrEvalDatamodule
+  # class_path: rlaihf.datamodules.ChatBotArenaDebugDatamodule
+  init_args:
+    load_dataset_name: "lmsys/chatbot_arena_conversations"
+    load_dataset_split: "train"
+    tokenize_pipeline:
+      class_path: rlaihf.tokenize_pipelines.TokenizePipelineV2
+      init_args:
+        # model_name_or_path: "Ray2333/GRM-Gemma-2B-sftreg"
+        raw_data_convert: rlaihf.data_conversion.ChatBotArenaTrainDataConversion
+    collate_fn:
+      class_path: rlaihf.collators.StandardPaddingCollatorV3
+      init_args:
+        other_keys: ["score", "id", "model_a", "model_b"]
+    batch_size: 4
+    save_dataset_dir: "~/datasets"
+    num_workers: 1
+    holdout_model_id: 0 # Change in script
+    keep_tie: False
+
