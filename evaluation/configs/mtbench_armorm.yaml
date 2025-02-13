@@ -7,7 +7,7 @@ model:
   init_args:
     model_name_or_path: "RLHFlow/ArmoRM-Llama3-8B-v0.1"
     model_dtype: bfloat16
-    save_dir: "/home/zhaoyiz/projects/data/reward_dicts/mt-bench_armorm_sorted_avg"
+    save_dir: "results/mt-bench_armorm"
     dialog_keys: ["conversation_a", "conversation_b"]
 data:
   class_path: rlaihf.datamodules.MtbenchTestDatamodule

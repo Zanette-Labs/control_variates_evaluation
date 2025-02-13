@@ -1,0 +1,1 @@
+python src/rlaihf/mains/convert_chatbotarena_gpt4.py

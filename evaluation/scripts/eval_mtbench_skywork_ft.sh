@@ -4,7 +4,7 @@ config="mtbench_skywork_ft.yaml"
 
 for ((id=0; id<6; id++)); do
     # Find ckpt
-    ckpt_matches=(../finetune/results/mt_bench_Skywork-Reward-Llama-3.1-8B-v0.2/run_holdout-${id}*)
+    ckpt_matches=(../finetune/results/mt_bench_Skywork-Reward-Llama-3.1-8B-v0.2/run_holdout-${id}_*)
     # check whether there is exactly one match
     if [ ${#ckpt_matches[@]} -eq 1 ] && [ -e "${ckpt_matches[0]}" ]; then
         ckpt="${ckpt_matches[0]}"

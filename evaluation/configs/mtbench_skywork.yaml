@@ -6,13 +6,10 @@ trainer:
 model:
   class_path: rlaihf.algorithms.SkyworkLlama
   init_args:
-    # model_name_or_path: "/home/zhaoyiz/projects/misc/rm_finetune/results/GRM-Gemma-2B-sftreg/run_20241222_152817"
     model_name_or_path: "Skywork/Skywork-Reward-Llama-3.1-8B-v0.2"
     model_dtype: float16
-    save_dir: "/home/zhaoyiz/projects/data/reward_dicts/mt-bench_skywork_sorted_avg"
+    save_dir: "results/mt-bench_skywork"
     dialog_keys: ["conversation_a", "conversation_b"]
-    # load_weight_dir: None
-    # load_weight_dir: None
     label_key: "score"
 data:
   class_path: rlaihf.datamodules.MtbenchTestDatamodule

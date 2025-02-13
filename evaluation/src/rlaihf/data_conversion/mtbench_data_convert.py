@@ -26,7 +26,7 @@ class MtbenchDataConversion:
             datum["conversation_b"] = trunc_conv_b
         return datum
 
-class MtbenchSortedDataConversionV2:
+class MtbenchSortedDataConversion:
     def __init__(self):
         pass
     def __call__(self, datum: Dict):

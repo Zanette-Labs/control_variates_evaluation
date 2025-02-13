@@ -8,7 +8,7 @@ model:
   init_args:
     model_name_or_path: "Ray2333/GRM-Gemma-2B-sftreg"
     model_dtype: float16
-    save_dir: "/home/zhaoyiz/projects/data/reward_dicts/mt-bench_gemma_sorted_avg_new"
+    save_dir: "results/mt-bench_gemma"
     dialog_keys: ["conversation_a", "conversation_b"]
 data:
   class_path: rlaihf.datamodules.MtbenchCorrEvalDatamodule
