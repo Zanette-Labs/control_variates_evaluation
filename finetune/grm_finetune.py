@@ -13,8 +13,8 @@
 # limitations under the License.
 
 """
-trl == 0.11.0
-transformers = 4.40.0
+trl==0.11.0
+transformers==4.40.0
 
 grm finetune
 """

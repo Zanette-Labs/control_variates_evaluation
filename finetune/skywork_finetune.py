@@ -13,8 +13,8 @@
 # limitations under the License.
 
 """
-trl == 0.13.0
-transformers = 4.47.1
+trl==0.13.0
+transformers==4.47.1
 
 skywork finetuning
 """

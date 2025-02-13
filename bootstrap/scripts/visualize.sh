@@ -6,6 +6,7 @@ data_list=("chatbot-arena" "mt-bench")
 model_list=("skywork" "skywork" "gemma" "gemma" "armorm" "gpt4")
 type_list=("finetuned" "pretrained" "finetuned" "pretrained" "pretrained" "pretrained")
 
+# If you have not run all bootstrapping tests, change the loop range accordingly
 for ((id=0; id<12; id++)); do
     data_id=$((id / 6))
     model_id=$((id % 6))
