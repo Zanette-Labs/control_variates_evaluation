@@ -8,7 +8,7 @@ model:
   init_args:
     model_name_or_path: "Skywork/Skywork-Reward-Llama-3.1-8B-v0.2"
     model_dtype: float16
-    save_dir: "/home/zhaoyiz/projects/data/reward_dicts/mt-bench_skywork_sorted_avg_new"
+    save_dir: "results/mt-bench_skywork"
     dialog_keys: ["conversation_a", "conversation_b"]
     label_key: "score"
 data:
