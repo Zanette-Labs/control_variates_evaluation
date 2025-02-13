@@ -1,0 +1,30 @@
+{
+    "chatbot-arena_gemma": {
+        "pretrained": 10.553,
+        "finetuned": 17.103
+    },
+    "chatbot-arena_skywork": {
+        "pretrained": 8.316,
+        "finetuned": 24.848
+    },
+    "chatbot-arena_armorm": {
+        "pretrained": 12.180
+    },
+    "chatbot-arena_gpt4": {
+        "pretrained": 12.177
+    },
+    "mt-bench_gemma": {
+        "pretrained": 5.732,
+        "finetuned": 10.887
+    },
+    "mt-bench_skywork": {
+        "pretrained": 7.488,
+        "finetuned": 12.559
+    },
+    "mt-bench_armorm": {
+        "pretrained": 9.556
+    },
+    "mt-bench_gpt4": {
+        "pretrained": 11.872
+    }
+}
