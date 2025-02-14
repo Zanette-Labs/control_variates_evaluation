@@ -9,6 +9,9 @@ import pickle
 import re
 from matplotlib.colors import Normalize
 from pathlib import Path
+# remember this!
+import seaborn as sns
+import pandas as pd
 
 def get_rm_score_bt(conv_a_reward, conv_b_reward):
     reward_diff = conv_b_reward - conv_a_reward
@@ -375,6 +378,7 @@ def visualize_matrix(mat: np.ndarray, row_col_labels: List[str], file_path: str,
         - "nan_label": str
         - "vmin"
         - "vmax"
+        - "colormap"
     '''
     # Define default parameters:
     default_kwargs_dict = {
@@ -382,7 +386,8 @@ def visualize_matrix(mat: np.ndarray, row_col_labels: List[str], file_path: str,
         "show_diagonal": True,
         "nan_label": "nan",
         "vmin": None,
-        "vmax": None
+        "vmax": None,
+        "colormap": "coolwarm"
     }
 
     if kwargs_dict is not None:
@@ -392,33 +397,36 @@ def visualize_matrix(mat: np.ndarray, row_col_labels: List[str], file_path: str,
 
     # Set the figure size
     n = len(row_col_labels)
-    plt.figure(figsize=(1 + n * 4, 1 + n * 4))
+    plt.figure(figsize=(12,10))
 
     if not default_kwargs_dict["show_diagonal"]:
         np.fill_diagonal(mat, np.nan)
+    df = pd.DataFrame(mat, 
+                  index=row_col_labels,
+                  columns=row_col_labels)
 
-    if default_kwargs_dict["vmin"] is not None and default_kwargs_dict["vmax"] is not None:
-        norm = Normalize(vmin = default_kwargs_dict["vmin"], vmax = default_kwargs_dict["vmax"])
-        plt.matshow(mat, cmap="viridis", norm=norm)
+    # Create heatmap
+    if default_kwargs_dict["type"] == "int":
+        fmt=".0f"
     else:
-        plt.matshow(mat, cmap="viridis")
-    # round_mat = np.round(mat, 3)
-    def process(x, nan_label = "nan"):
-        if np.isnan(x):
-            return nan_label
-        if default_kwargs_dict["type"] == "int":
-            return f"{int(x)}"
-        if x == 1:
-            return "1"
-        return f"{x:.2f}".lstrip('0')
-    for (i,j), num in np.ndenumerate(mat):
-        plt.text(j,i, process(num, nan_label=default_kwargs_dict["nan_label"]), ha='center', va='center',c='r', fontsize=6)
-    plt.xticks(np.arange(n), row_col_labels, rotation=90, fontsize=8)
-    plt.yticks(np.arange(n), row_col_labels, fontsize=8)
-
-    # colorbar
-    plt.colorbar(fraction=0.046, pad=0.04)
-    plt.savefig(file_path, dpi=300, bbox_inches='tight')
+        fmt=".2f"
+    if n > 10:
+        fontsize = 15
+    else:
+        fontsize = 20
+    if default_kwargs_dict["vmin"] is not None and default_kwargs_dict["vmax"] is not None:
+        ax = sns.heatmap(df, annot=True, fmt=fmt, cmap='coolwarm', 
+                    linewidths=.5, linecolor='gray', annot_kws={'size': fontsize}, vmin=default_kwargs_dict["vmin"], vmax=default_kwargs_dict["vmax"])
+    else:
+        ax = sns.heatmap(df, annot=True, fmt=fmt, cmap='coolwarm', 
+                    linewidths=.5, linecolor='gray', annot_kws={'size': fontsize}, vmin=default_kwargs_dict["vmin"], vmax=default_kwargs_dict["vmax"])
+    cbar = ax.collections[0].colorbar
+    cbar.ax.tick_params(labelsize=fontsize)  # Tick labels font size 
+    plt.xticks(rotation=45, ha='right', fontsize=fontsize)
+    plt.yticks(rotation=0, fontsize=fontsize)
+    plt.tight_layout()
+    plt.savefig(file_path)
+    plt.close()
 
 def winner2score(winner_list: Tuple[str, List[str]]) -> Tuple[float, List[float]]:
     def winner2score_single(winner: str) -> float:
@@ -449,11 +457,6 @@ def compute_sample_saving(threshold, corr_mat, num_mat):
     print(f"{np.sum(num_mask)} model pairs have more than {threshold} data points with non-nan correlation")
     print(f"Average saving: {avg_saving}")
     print(f"Weighted average saving: {weighted_avg_saving}")
-
-    # print out non-zero numbers
-    # id = np.nonzero(masked_num_mat)
-    # print(f"Number: {masked_num_mat[id]}")
-    # print(f"Saving: {saving_mat[id]}")
 
 class DualLogger:
     '''

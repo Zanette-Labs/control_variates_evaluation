@@ -6,7 +6,7 @@ run_list=("chatbot-arena_skywork" "chatbot-arena_gemma" "chatbot-arena_armorm")
 for id in 0 1 2; do
     run=${run_list[$id]}
     # Find ckpt
-    ckpt="${data_root}/${run}_pretrained/reward_dict_pretrained.pkl"
+    ckpt="${data_root}/${run}/reward_dict_pretrained.pkl"
 
     echo $ckpt
     python $main \
