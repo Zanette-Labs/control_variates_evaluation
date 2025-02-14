@@ -8,7 +8,7 @@ for id in 0 1; do
     # Find ckpt
     ckpt=""
     for id in 0 1 2 3 4 5; do
-        ckpt_matches=(${data_root}/${run}_new/reward_dict_run_holdout-${id}_*.pkl)
+        ckpt_matches=(${data_root}/${run}/reward_dict_run_holdout-${id}_*.pkl)
         # check whether there is exactly one match
         if [ ${#ckpt_matches[@]} -eq 1 ] && [ -e "${ckpt_matches[0]}" ]; then
             ckpt="$ckpt ${ckpt_matches[0]}"
