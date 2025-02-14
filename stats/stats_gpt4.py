@@ -93,10 +93,7 @@ if __name__ == "__main__":
     args = get_args()
 
     # save args
-    if len(args.rm_dict_file_path) == 1:
-        ckpt_name = args.rm_dict_file_path[0].split("/")[-1].split(".")[0]
-        dir_name = ckpt_name
-    elif args.save_dir != "None":
+    if args.save_dir != "None":
         dir_name = args.save_dir
     else:
         print("Warning: save_dir is not specified")
@@ -180,7 +177,7 @@ if __name__ == "__main__":
             "vmin": 0.0,
             "vamx": 1.0
         })
-    if "mt-bench" in args.rm_dict_file_path[0]:
+    if "mt-bench" in args.rm_dict_file_path:
         saving_vmax = 20
     else:
         saving_vmax = 50
