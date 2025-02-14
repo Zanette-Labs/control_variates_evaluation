@@ -16,9 +16,6 @@ def compute_err_single_run(pred_scores, gt_winrate):
     Compute the mse_err for a list of predicted scores and the ground truth winrate
     '''
     pred_scores = np.asarray(pred_scores)
-    # num_nan = np.sum(np.isnan(pred_scores))
-    # if num_nan > 500:
-    # print(f"Warning: number of nan{num_nan}")
     return np.nanmean((pred_scores - gt_winrate) ** 2)
 
 def compute_err_single_pair(prediction_dict, gt_winrate):
@@ -132,21 +129,22 @@ def visualize_var(err_dict, save_path: str, shift, fontsize=18):
         avg_err_list = avg_err_list[idx]
 
         # Get shifted curve
-        if "cv" in eval_type:
-            cv_shift_avg_err_list = deepcopy(avg_err_list)
-            cv_shift_num_gt_sample_list = deepcopy(num_gt_sample_list) / (1-shift)
-            cv_idx = cv_shift_num_gt_sample_list <= 1000
-            cv_shift_num_gt_sample_list = cv_shift_num_gt_sample_list[cv_idx]
-            cv_shift_avg_err_list = cv_shift_avg_err_list[cv_idx]
-            cv_shift_avg_err_list = cv_shift_avg_err_list[::20]
-            cv_shift_num_gt_sample_list = cv_shift_num_gt_sample_list[::20]
+        if "human" in eval_type:
+            human_shift_avg_err_list = deepcopy(avg_err_list)
+            human_shift_num_gt_sample_list = deepcopy(num_gt_sample_list) * (1-shift)
+            human_idx = human_shift_num_gt_sample_list <= 1000
+            human_shift_num_gt_sample_list = human_shift_num_gt_sample_list[human_idx]
+            human_shift_avg_err_list = human_shift_avg_err_list[human_idx]
+            human_shift_avg_err_list = human_shift_avg_err_list[::40]
+            human_shift_num_gt_sample_list = human_shift_num_gt_sample_list[::40]
 
-        ax.plot(num_gt_sample_list, avg_err_list, color = color_dict[eval_type], label=label_convert(eval_type))
+        ax.plot(num_gt_sample_list, avg_err_list, color = color_dict[eval_type], label=label_convert(eval_type), linewidth=2)
 
-    ax.plot(cv_shift_num_gt_sample_list, cv_shift_avg_err_list, label="Control Variates (shifted)", color = color_dict['cv4'], marker="d", linewidth = 2, linestyle='--')
+    ax.plot(human_shift_num_gt_sample_list, human_shift_avg_err_list, label="Human (shifted)", color = color_dict['human'], marker="d", linewidth = 1, linestyle='--')
     ax.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
     ax.set_xlabel("Number of Human Annotations", fontsize=fontsize)
     ax.set_ylabel("Averaged MSE", fontsize=fontsize)
+    ax.set_yticks([1e-4, 2e-4, 3e-4, 4e-4, 5e-4, 6e-4])
     ax.tick_params(axis='both', which='major', labelsize=fontsize)
     
     ax.legend(fontsize=fontsize)
